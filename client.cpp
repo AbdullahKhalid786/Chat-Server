@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstring>
 #include <sys/poll.h>
 #include <iostream>
 #include <sys/socket.h>
@@ -38,17 +39,22 @@ int main(){
 	}
 	};
 
-	for (;;) {
 
+	for (;;) {
+			
 		char buffer[256] = { 0 };
-		poll(fds, 2, 500000);
+		poll(fds, 2, -1);
 
 
 		if (fds[0].revents & POLLIN) {
-			read(0, buffer, 255);
-			send(sock, buffer, 255, 0);
+			memset(buffer, 0,sizeof(buffer));
+			int bytes = read(0, buffer, 255);
+			buffer[bytes - 1] = '\0';
+			send(sock, buffer, bytes, 0);
+			
 		} else if (fds[1].revents & POLLIN) {
-			if (recv(sock, buffer, 255, 0) == 0) {
+			memset(buffer, 0,sizeof(buffer));
+			if (recv(sock, buffer, 255, 0) == 0){
 				close(sock);
 				return 0;
 			}
